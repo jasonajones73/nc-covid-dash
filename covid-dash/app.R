@@ -5,6 +5,7 @@ library(lubridate)
 library(echarts4r)
 library(leaflet)
 library(htmltools)
+library(bsplus)
 
 # Source necessary modules
 source("modules/getData.R")
@@ -20,6 +21,7 @@ ui <- navbarPage(
              fluidPage(
                  tags$link(href="https://fonts.googleapis.com/css2?family=Questrial&display=swap", rel="stylesheet"),
                  tags$style(HTML("* {font-size: 100%; font-family: Questrial, sans-serif;}")),
+                 tags$style(".panel-title {font-size: 20px;} .control-label {font-size: 20px}"),
                  fluidRow(
                      column(width = 5,
                             fluidRow(uiOutput("state_total")),
@@ -31,20 +33,20 @@ ui <- navbarPage(
                                                         selectize = TRUE, width = "100%"))),
                             fluidRow(uiOutput("county_total"))),
                      column(width = 7,
-                            tabsetPanel(type = "pill",
-                                        tabPanel("Weekly Confirmed Cases",
-                                                 echartUI("chart4")),
-                                        tabPanel("Daily Confirmed Cases",
-                                                 echartUI("chart1")),
-                                        tabPanel("Cumulative Confirmed Cases",
-                                                 echartUI("chart3")),
-                                        tabPanel("Daily Deaths",
-                                                 echartUI("chart2")),
-                                        tabPanel("Confirmed Cases by Day of Week",
-                                                 echartUI("chart5")),
-                                        tabPanel("Map of Total Cases",
-                                                 leafletMapUI("map"))
-                                        )
+                            bs_accordion(id = "main_charts") %>%
+                                bs_append(title = "Weekly Confirmed Cases",
+                                          content = echartUI("chart4")) %>%
+                                bs_append(title = "Daily Confirmed Cases",
+                                          content = echartUI("chart1")) %>%
+                                bs_append(title = "Cumulative Confirmed Cases",
+                                          content = echartUI("chart3")) %>%
+                                bs_append(title = "Daily Deaths",
+                                          content = echartUI("chart2")) %>%
+                                bs_append(title = "Confirmed Cases by Day of Week",
+                                          content = echartUI("chart5")) %>%
+                                bs_append(title = "Map of Total Cases",
+                                          content = leafletMapUI("map")),
+                            p(sprintf('Data updated from the Johns Hopkins GitHub repository automatically and is current as of %s', format(unique(confirmed_map$date), '%b %d, %Y')))
                             )
                      )
                  )
