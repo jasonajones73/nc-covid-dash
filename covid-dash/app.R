@@ -6,6 +6,7 @@ library(echarts4r)
 library(leaflet)
 library(htmltools)
 library(bsplus)
+library(countup)
 
 # Source necessary modules
 source("modules/getData.R")
@@ -110,18 +111,35 @@ server <- function(input, output) {
     # Call leaflet module and pass data objects to module
     map_sel <- callModule(leafletMapServer, "map", map_dat = confirmed_map)
     
+    # Rendering odometer counts
+    output$st_total_count <- renderCountup({
+        countup(sum(confirmed_map$cases))
+    })
+    
+    output$st_prior_count <- renderCountup({
+        countup(sum(confirmed_map$daily_cases))
+    })
+    
+    output$ct_total_count <- renderCountup({
+        countup(sum(info_box()$cases))
+    })
+    
+    output$ct_prior_count <- renderCountup({
+        countup(sum(info_box()$daily_cases))
+    })
+    
     output$state_total <- renderUI({
         tagList(
             column(width = 6,
                    tags$style(".well {background-color: #0077b5;}"),
                    wellPanel(
-                       h1(prettyNum(sum(confirmed_map$cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px;"),
+                       h1(countupOutput("st_total_count"), style = "text-align: center; color: white; margin: 0 0 0px;"),
                        h3("NC Cases", style = "text-align: center; color: white; margin: 0 0 0px")
                        )),
             column(width = 6,
                    tags$style(".well {background-color: #0077b5;}"),
                    wellPanel(
-                       h1(prettyNum(sum(confirmed_map$daily_cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px"),
+                       h1(countupOutput("st_prior_count"), style = "text-align: center; color: white; margin: 0 0 0px"),
                        h3("NC Prior Day", style = "text-align: center; color: white; margin: 0 0 0px")
                    ))
         )
@@ -132,14 +150,14 @@ server <- function(input, output) {
             column(width = 6,
                    tags$style(".well {background-color: #0077b5;}"),
                    wellPanel(
-                       h1(prettyNum(sum(info_box()$cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px"),
+                       h1(countupOutput("ct_total_count"), style = "text-align: center; color: white; margin: 0 0 0px"),
                        h3(sprintf("%s Cases", input$countySelection), style = "text-align: center; color: white; margin: 0 0 0px"),
                        
                    )),
             column(width = 6,
                    tags$style(".well {background-color: #0077b5;}"),
                    wellPanel(
-                       h1(prettyNum(sum(info_box()$daily_cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px"),
+                       h1(countupOutput("ct_prior_count"), style = "text-align: center; color: white; margin: 0 0 0px"),
                        h3(sprintf("%s Prior Day", input$countySelection), style = "text-align: center; color: white; margin: 0 0 0px")
                    ))
         )
