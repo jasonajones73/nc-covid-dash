@@ -1,5 +1,10 @@
 # Load primary packages
 library(shiny)
+library(tidyverse)
+library(lubridate)
+library(echarts4r)
+library(leaflet)
+library(htmltools)
 
 # Source necessary modules
 source("modules/getData.R")
@@ -15,25 +20,33 @@ ui <- navbarPage(
              fluidPage(
                  tags$link(href="https://fonts.googleapis.com/css2?family=Questrial&display=swap", rel="stylesheet"),
                  tags$style(HTML("* {font-size: 100%; font-family: Questrial, sans-serif;}")),
-                 fluidRow(selectInput("countySelection",
-                                      label = "Please select a county:",
-                                      choices = unique(combined$Admin2),
-                                      selected = "Gaston",
-                                      selectize = TRUE)),
-                 fluidRow(tabsetPanel(type = "pill",
-                                      tabPanel("Daily Confirmed Cases",
-                                               echartUI("chart1")),
-                                      tabPanel("Weekly Confirmed Cases",
-                                               echartUI("chart4")),
-                                      tabPanel("Cumulative Confirmed Cases",
-                                               echartUI("chart3")),
-                                      tabPanel("Daily Deaths",
-                                               echartUI("chart2")),
-                                      tabPanel("Confirmed Cases by Day of Week",
-                                               echartUI("chart5")),
-                                      tabPanel("Map of Total Cases",
-                                               leafletMapUI("map"))
-                                      ))
+                 fluidRow(
+                     column(width = 5,
+                            fluidRow(uiOutput("state_total")),
+                            fluidRow(column(width = 12,
+                                            selectInput("countySelection",
+                                                        label = "Please select a county:",
+                                                        choices = unique(combined$Admin2),
+                                                        selected = "Gaston",
+                                                        selectize = TRUE, width = "100%"))),
+                            fluidRow(uiOutput("county_total"))),
+                     column(width = 7,
+                            tabsetPanel(type = "pill",
+                                        tabPanel("Daily Confirmed Cases",
+                                                 echartUI("chart1")),
+                                        tabPanel("Weekly Confirmed Cases",
+                                                 echartUI("chart4")),
+                                        tabPanel("Cumulative Confirmed Cases",
+                                                 echartUI("chart3")),
+                                        tabPanel("Daily Deaths",
+                                                 echartUI("chart2")),
+                                        tabPanel("Confirmed Cases by Day of Week",
+                                                 echartUI("chart5")),
+                                        tabPanel("Map of Total Cases",
+                                                 leafletMapUI("map"))
+                                        )
+                            )
+                     )
                  )
              )
     )
@@ -41,6 +54,7 @@ ui <- navbarPage(
 # Define server
 server <- function(input, output) {
     
+    # Filtering data for county selection
     confirmed_filt <- reactive({
         confirmed %>%
             filter(Admin2 == input$countySelection)
@@ -61,6 +75,11 @@ server <- function(input, output) {
             filter(Admin2 == input$countySelection)
     })
     
+    info_box <- reactive({
+        confirmed_map %>%
+            filter(Admin2 == input$countySelection)
+    })
+    
     # This is a series of module calls to produce the necessary charts from the 
     # chart module. Every chart is being produced from the same module
     callModule(echartServer, "chart1", df = confirmed_filt,
@@ -78,8 +97,43 @@ server <- function(input, output) {
     callModule(echartBarServer, "chart5", df = by_dow_filt,
                column_name = "day_total", chart_name = "Confirmed Cases by Day of Week")
     
-    # Call leaflet module and pass both reactive data objects to module
+    # Call leaflet module and pass data objects to module
     map_sel <- callModule(leafletMapServer, "map", map_dat = confirmed_map)
+    
+    output$state_total <- renderUI({
+        tagList(
+            column(width = 6,
+                   tags$style(".well {background-color: #0077b5;}"),
+                   wellPanel(
+                       h1(prettyNum(sum(confirmed_map$cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px;"),
+                       h3("NC Cases", style = "text-align: center; color: white; margin: 0 0 0px")
+                       )),
+            column(width = 6,
+                   tags$style(".well {background-color: #0077b5;}"),
+                   wellPanel(
+                       h1(prettyNum(sum(confirmed_map$daily_cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px"),
+                       h3("NC Prior Day", style = "text-align: center; color: white; margin: 0 0 0px")
+                   ))
+        )
+    })
+    
+    output$county_total <- renderUI({
+        tagList(
+            column(width = 6,
+                   tags$style(".well {background-color: #0077b5;}"),
+                   wellPanel(
+                       h1(prettyNum(sum(info_box()$cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px"),
+                       h3(sprintf("%s Cases", input$countySelection), style = "text-align: center; color: white; margin: 0 0 0px"),
+                       
+                   )),
+            column(width = 6,
+                   tags$style(".well {background-color: #0077b5;}"),
+                   wellPanel(
+                       h1(prettyNum(sum(info_box()$daily_cases), big.mark = ","), style = "text-align: center; color: white; margin: 0 0 0px"),
+                       h3(sprintf("%s Prior Day", input$countySelection), style = "text-align: center; color: white; margin: 0 0 0px")
+                   ))
+        )
+    })
     
 }
 
