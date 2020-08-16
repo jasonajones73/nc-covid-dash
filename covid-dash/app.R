@@ -16,7 +16,7 @@ source("modules/leafletModule.R")
 ui <- navbarPage(
     title = "NC COVID Dashboard",
     collapsible = TRUE,
-    tabPanel("Data Visualization",
+    tabPanel("Dashboard",
              fluidPage(
                  tags$link(href="https://fonts.googleapis.com/css2?family=Questrial&display=swap", rel="stylesheet"),
                  tags$style(HTML("* {font-size: 100%; font-family: Questrial, sans-serif;}")),
@@ -32,10 +32,10 @@ ui <- navbarPage(
                             fluidRow(uiOutput("county_total"))),
                      column(width = 7,
                             tabsetPanel(type = "pill",
-                                        tabPanel("Daily Confirmed Cases",
-                                                 echartUI("chart1")),
                                         tabPanel("Weekly Confirmed Cases",
                                                  echartUI("chart4")),
+                                        tabPanel("Daily Confirmed Cases",
+                                                 echartUI("chart1")),
                                         tabPanel("Cumulative Confirmed Cases",
                                                  echartUI("chart3")),
                                         tabPanel("Daily Deaths",
@@ -48,6 +48,14 @@ ui <- navbarPage(
                             )
                      )
                  )
+             ),
+    tabPanel("About",
+             fluidPage(h1("Data Source"),
+                       p("All of the data used for the creation of this Shiny web application can be found within the",
+                         tags$a("COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.",
+                                href = "https://github.com/CSSEGISandData/COVID-19")
+                         )
+                       )
              )
     )
 
