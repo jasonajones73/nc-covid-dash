@@ -45,7 +45,7 @@ ui <- navbarPage(
                                           content = echartUI("chart2")) %>%
                                 bs_append(title = "Confirmed Cases by Day of Week",
                                           content = echartUI("chart5")) %>%
-                                bs_append(title = "Map of Total Cases",
+                                bs_append(title = "County Map of Cases per 10,000 Residents",
                                           content = leafletMapUI("map")),
                             p(sprintf('Data updated from the Johns Hopkins GitHub repository automatically and is current as of %s', format(unique(confirmed_map$date), '%b %d, %Y')))
                             )

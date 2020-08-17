@@ -18,7 +18,10 @@ confirmed_map <- confirmed %>%
   group_by(Admin2) %>%
   top_n(1, date) %>%
   ungroup() %>%
-  filter(Lat > 1)
+  filter(Lat > 1) %>%
+  left_join(select(deaths, Admin2, Population)) %>%
+  distinct(Admin2, .keep_all = TRUE) %>%
+  mutate(cases_per = as.integer(cases / (Population / 10000)))
 
 deaths <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv") %>%
   filter(Province_State == "North Carolina") %>%

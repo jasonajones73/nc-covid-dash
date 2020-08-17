@@ -11,13 +11,13 @@ leafletMapUI <- function(id) {
 leafletMapServer <- function(input, output, session, map_dat) {
   
   output$resource_map <- renderLeaflet({
-    labs <- sprintf("<h5>%s</h5>\n<h5>%s</h5>\n<p>%s</p>", map_dat$Admin2, prettyNum(map_dat$cases, big.mark = ","), map_dat$Province_State)
+    labs <- sprintf("<h5>%s</h5>\n<h5>%s</h5>\n<p>%s</p>", map_dat$Admin2, prettyNum(map_dat$cases_per, big.mark = ","), map_dat$Province_State)
     
     leaflet(data = map_dat) %>%
-      addProviderTiles(provider = providers$CartoDB.Voyager) %>%
+      addProviderTiles(provider = providers$CartoDB.Positron) %>%
       addCircleMarkers(lng = ~Long_, lat = ~Lat, layerId = ~UID,
-                       label = ~map(labs, HTML), stroke = FALSE,
-                       radius = ~cases/1000, fillOpacity = 1, fillColor = "#0077b5")
+                       label = ~map(labs, HTML), stroke = TRUE, color = "black", weight = 1,
+                       radius = ~cases_per/25, fillOpacity = 1, fillColor = "#0077b5")
   })
   
   return(reactive({ input$resource_map_marker_click$id }))
