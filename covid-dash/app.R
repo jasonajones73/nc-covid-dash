@@ -63,7 +63,7 @@ ui <- navbarPage(
     )
 
 # Define server
-server <- function(input, output) {
+server <- function(input, output, session) {
     
     # Filtering data for county selection
     confirmed_filt <- reactive({

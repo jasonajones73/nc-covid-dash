@@ -14,15 +14,6 @@ confirmed <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19
   mutate(daily_cases = ifelse(is.na(daily_cases), 0, daily_cases)) %>%
   mutate(daily_cases = cases - daily_cases)
 
-confirmed_map <- confirmed %>%
-  group_by(Admin2) %>%
-  top_n(1, date) %>%
-  ungroup() %>%
-  filter(Lat > 1) %>%
-  left_join(select(deaths, Admin2, Population)) %>%
-  distinct(Admin2, .keep_all = TRUE) %>%
-  mutate(cases_per = as.integer(cases / (Population / 10000)))
-
 deaths <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv") %>%
   filter(Province_State == "North Carolina") %>%
   filter(Admin2 != "Unassigned" & Admin2 != "Out of NC") %>%
@@ -60,6 +51,13 @@ by_dow <- confirmed %>%
   ungroup() %>%
   mutate(date = as.character(date))
 
-
+confirmed_map <- confirmed %>%
+  group_by(Admin2) %>%
+  top_n(1, date) %>%
+  ungroup() %>%
+  filter(Lat > 1) %>%
+  left_join(select(deaths, Admin2, Population)) %>%
+  distinct(Admin2, .keep_all = TRUE) %>%
+  mutate(cases_per = as.integer(cases / (Population / 10000)))
 
 

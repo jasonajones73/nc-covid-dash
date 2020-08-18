@@ -17,7 +17,7 @@ leafletMapServer <- function(input, output, session, map_dat) {
       addProviderTiles(provider = providers$CartoDB.Positron) %>%
       addCircleMarkers(lng = ~Long_, lat = ~Lat, layerId = ~UID,
                        label = ~map(labs, HTML), stroke = TRUE, color = "black", weight = 1,
-                       radius = ~cases_per/25, fillOpacity = 1, fillColor = "#0077b5")
+                       radius = ~cases_per/20, fillOpacity = 1, fillColor = "#0077b5")
   })
   
   return(reactive({ input$resource_map_marker_click$id }))
