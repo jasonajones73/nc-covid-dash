@@ -25,17 +25,6 @@ deaths <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/ma
   mutate(daily_deaths = ifelse(is.na(daily_deaths), 0, daily_deaths)) %>%
   mutate(daily_deaths = deaths - daily_deaths)
 
-combined <- confirmed %>%
-  left_join(deaths) %>%
-  select(Province_State, Admin2, Country_Region,Population, date, cases, deaths) %>%
-  group_by(Province_State, Admin2, Country_Region) %>%
-  nest() %>%
-  ungroup() %>%
-  mutate(data = map(.x = data, .f = as.data.frame)) %>%
-  mutate(data = map(.x = data, .f = ~arrange(.x, date))) %>%
-  left_join(select(confirmed_map, Admin2, cases, daily_cases, cases_per)) %>%
-  select(Admin2, daily_cases, cases, cases_per, data)
-
 by_week <- confirmed %>%
   mutate(date = as.integer(week(date))) %>%
   group_by(Admin2, date) %>%
@@ -60,5 +49,16 @@ confirmed_map <- confirmed %>%
   left_join(select(deaths, Admin2, Population)) %>%
   distinct(Admin2, .keep_all = TRUE) %>%
   mutate(cases_per = as.integer(cases / (Population / 10000)))
+
+combined <- confirmed %>%
+  left_join(deaths) %>%
+  select(Province_State, Admin2, Country_Region,Population, date, cases, deaths) %>%
+  group_by(Province_State, Admin2, Country_Region) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(data = map(.x = data, .f = as.data.frame)) %>%
+  mutate(data = map(.x = data, .f = ~arrange(.x, date))) %>%
+  left_join(select(confirmed_map, Admin2, cases, daily_cases, cases_per)) %>%
+  select(Admin2, daily_cases, cases, cases_per, data)
 
 
