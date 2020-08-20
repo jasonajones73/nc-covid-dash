@@ -7,6 +7,8 @@ library(leaflet)
 library(htmltools)
 library(bsplus)
 library(countup)
+library(reactable)
+library(dataui)
 
 # Source necessary modules
 source("modules/getData.R")
@@ -52,6 +54,11 @@ ui <- navbarPage(
                      )
                  )
              ),
+    tabPanel("Data Table",
+             fluidPage(column(width = 1),
+                       column(width = 10,
+                              reactableOutput("table")),
+                       column(width = 1))),
     tabPanel("About",
              fluidPage(h1("Data Source"),
                        p("All of the data used for the creation of this Shiny web application can be found within the",
@@ -161,6 +168,36 @@ server <- function(input, output, session) {
                        h3(sprintf("%s Prior Day", input$countySelection), style = "text-align: center; color: white; margin: 0 0 0px")
                    ))
         )
+    })
+    
+    output$table <- renderReactable({
+        combined %>%
+            reactable(defaultColDef = colDef(align = "center"),
+                      filterable = TRUE,defaultPageSize = 5,
+                columns = list(
+                Admin2 = colDef(name = "County"),
+                daily_cases = colDef(name = "Prior Day Cases"),
+                cases = colDef(name = "Cumulative Cases",
+                               cell = function(value) {prettyNum(value, big.mark = ",")}),
+                cases_per = colDef(name = "Cases per 10,000 Residents"),
+                data = colDef(name = "Confirmed Cases",
+                              cell = function(value, index) {
+                                  dui_sparkline(data = value$cases,
+                                                height = 80,
+                                                components = list(
+                                                    dui_sparklineseries(showArea = TRUE),
+                                                    dui_tooltip(components = list(
+                                                        dui_sparkverticalrefline(
+                                                            strokeDasharray = "4,4",
+                                                            stroke = gray.colors(10)[3]
+                                                        ),
+                                                        dui_sparkpointseries(
+                                                            renderLabel = htmlwidgets::JS("(d) => d.toLocaleString()")
+                                                        )
+                                                    ))
+                                                ))
+                              })
+            ))
     })
     
 }

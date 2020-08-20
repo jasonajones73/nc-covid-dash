@@ -33,7 +33,8 @@ combined <- confirmed %>%
   ungroup() %>%
   mutate(data = map(.x = data, .f = as.data.frame)) %>%
   mutate(data = map(.x = data, .f = ~arrange(.x, date))) %>%
-  mutate(deaths = data)
+  left_join(select(confirmed_map, Admin2, cases, daily_cases, cases_per)) %>%
+  select(Admin2, daily_cases, cases, cases_per, data)
 
 by_week <- confirmed %>%
   mutate(date = as.integer(week(date))) %>%
